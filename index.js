@@ -11,7 +11,7 @@ app.get('/todos', async (req, res) => {
     const response = await axios.get(TODOS_URL);
     res.json(response.data);
   } catch (error) {
-    res.status(500).send('Error fetching todos');
+    res.status(500).send('Error fetching todos') ;
   }
 });
 
