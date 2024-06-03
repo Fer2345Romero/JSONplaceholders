@@ -2,58 +2,51 @@ const express = require('express');
 const axios = require('axios');
 
 const app = express();
-const PUERTO = 3000;
+const port = 3000;
+const TODOS_URL = 'https://jsonplaceholder.typicode.com/todos';
 
-app.use(express.json());
 
-app.get('/usuarios', async (req, res) => {
+app.get('/todos', async (req, res) => {
   try {
-    const respuesta = await axios.get('https://jsonplaceholder.typicode.com/users');
-    res.json(respuesta.data);
+    const response = await axios.get(TODOS_URL);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error al obtener los usuarios:', error.message);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).send('Error fetching todos');
   }
 });
 
 
-app.post('/usuarios', async (req, res) => {
+app.get('/todos/:id', async (req, res) => {
   try {
-    const { data } = await axios.post('https://jsonplaceholder.typicode.com/users', req.body);
-    res.status(201).json(data);
+    const id = req.params.id;
+    const response = await axios.get(`${TODOS_URL}/${id}`);
+    res.json({ title: response.data.title });
   } catch (error) {
-    console.error('Error al crear el usuario:', error.message);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).send('Error fetching todo by ID');
   }
 });
 
 
-app.put('/usuarios/:id', async (req, res) => {
-  const { id } = req.params;
-
+app.get('/todos/title/:title', async (req, res) => {
   try {
-    const { data } = await axios.put(`https://jsonplaceholder.typicode.com/users/${id}`, req.body);
-    res.json(data);
+    const title = req.params.title;
+    const response = await axios.get(TODOS_URL);
+    const filteredTodos = response.data.filter(todo => todo.title.includes(title));
+    res.json(filteredTodos);
   } catch (error) {
-    console.error(`Error al actualizar el usuario con ID ${id}:`, error.message);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).send('Error fetching todos by title');
   }
 });
 
-
-app.delete('/usuarios/:id', async (req, res) => {
-  const { id } = req.params;
-
+app.get('/todos/limit/5', async (req, res) => {
   try {
-    await axios.delete(`https://jsonplaceholder.typicode.com/users/${id}`);
-    res.sendStatus(204);
+    const response = await axios.get(TODOS_URL);
+    res.json(response.data.slice(0, 5));
   } catch (error) {
-    console.error(`Error al borrar el usuario con ID ${id}:`, error.message);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).send('Error fetching limited todos');
   }
 });
 
-
-app.listen(PUERTO, () => {
-  console.log(`Servidor API en ejecución en http://localhost:${PUERTO}`);
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
 });
